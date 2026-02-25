@@ -9,10 +9,19 @@ Since this is a learning project, I won’t use LLMs to generate code. They’ll
 
 ## Project Roadmap
 
-- Implement a `Process` struct
+- **Implement a `Process` struct**
     - ✅ Create a process by calling `CreateProcessA`
     - ✅ Get process handle
-- Implement basic DLL injection
+- **Implement basic DLL injection**
     - use `VirtualAllocEx` to allocate memory in target process
     - write shellcode/path to our hooked DLL using WriteProcessMemory
     - Create remote thread with `CreateRemoteThread` to call `LoadLibraryA`
+- **Hook Implementation**
+    - Support multiple hooking methods for hooking `kernel32.dll` functions:
+        - Inline hooks (manual JMP assembly)
+        - IAT hooking (patch Import Address Table)
+        - EAT hooking (Export Address Table for DLLs)
+    - Error handling & cleanup
+        - Unhook in DLL unload
+- **Expnasions**
+    - Extend hooking to `ntdll.dll` functions
