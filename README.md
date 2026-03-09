@@ -25,3 +25,4 @@ Since this is a learning project, I won’t use LLMs to generate code. They’ll
         - Unhook in DLL unload
 - **Expnasions**
     - Extend hooking to `ntdll.dll` functions
+    - Present the IAT table
