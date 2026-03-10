@@ -1,9 +1,12 @@
-use std::{str::FromStr, time::Duration};
-use windows::{Win32::{Foundation::HANDLE, System::Threading::*}, core::*};
-use crate::process;
-use std::thread;
+//use crate::process;
+//use std::thread;
+//use std::{str::FromStr, time::Duration};
+use windows::{
+    Win32::{Foundation::HANDLE, System::Threading::*},
+    core::*,
+};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ProcessState {
     Running,
     Idle,
@@ -21,7 +24,7 @@ pub struct Process {
 }
 
 impl Process {
-    /// Fill the strut with default values except the process name.
+    /// Fill the struct with default values except the process name.
     pub fn new(name: &str) -> Self {
         let p1 = Process::default();
 
@@ -31,6 +34,31 @@ impl Process {
         }
     }
 
+    pub fn new_from_pid(p_pid: u32) -> Option<Self>{
+
+        let mut p_handle: HANDLE;
+
+        unsafe {
+            let status = OpenProcess(
+                PROCESS_ALL_ACCESS, 
+                true, 
+                p_pid
+            );
+
+            match status {
+                Ok(x) => p_handle = x,
+                Err(y) => { return None},
+            }
+        }
+
+        let p1 = Process::default();
+        Some (Self { 
+            handle: p_handle,
+            pid: p_pid,
+            state: ProcessState::Running,
+            ..p1
+         })
+    }
     /// Calling the run() will actually create the process and run it.
     pub fn run(&mut self) -> Result<()> {
         match self.state {
@@ -39,7 +67,7 @@ impl Process {
                 return Err(Error::new(HRESULT(-1), "test"));
             }
         }
-        
+
         // Create parameters: structs and variables for calling CreateProccesA
         let p_name_ptr: *const u8 = self.p_name.as_ptr();
         let p_name_ptr = PCSTR(p_name_ptr);
@@ -64,7 +92,7 @@ impl Process {
 
             self.handle = pi.hProcess;
             self.pid = pi.dwProcessId;
-            
+
             match status {
                 Ok(_) => self.state = ProcessState::Running,
                 Err(x) => return Err(x),
@@ -74,6 +102,27 @@ impl Process {
         return Ok(());
     }
 
+    /// Terminate the process only if it's on 'Running' State
+    pub fn terminate(&mut self) -> Result<()> {
+
+        unsafe {
+            match self.state {
+                ProcessState::Running => {
+                    let status = TerminateProcess(self.get_handle(), 0);
+
+                    match status {
+                        Ok(_) => {
+                            self.state = ProcessState::Terminated;
+                            return Ok(());
+                        }
+                        Err(x) => return Err(x),
+                    }
+                }
+                _ => return Ok(()),
+            }
+        }
+    }
+
     pub fn get_pid(&self) -> u32 {
         self.pid
     }
@@ -81,13 +130,17 @@ impl Process {
     pub fn get_handle(&self) -> HANDLE {
         self.handle
     }
+
+    pub fn get_state(&self) -> ProcessState {
+        self.state.clone()
+    }
 }
 
 /// Default implementation for the Process struct
 impl Default for Process {
     fn default() -> Self {
         Self {
-            p_name: "notepad.exe".to_owned(),
+            p_name: "no-name".to_owned(),
             pid: 0,
             state: ProcessState::Empty,
             handle: HANDLE::default(),

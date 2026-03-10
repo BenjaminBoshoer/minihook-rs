@@ -1,25 +1,17 @@
 use crate::process::*;
 
 #[derive(Debug)]
-pub struct S {
-    a: i32,
-    b: i32,
-}
-
-impl S {
-    pub fn new() -> Self {
-        Self { a: 5, b: 5 }
-    }
-}
-
 pub struct MiniHook {
-    a: i32,
-    p_vec: Vec<Process>,
+    process: Process,
+    //t_iat: IAT,
 }
 
-/*impl MiniHook {
-    pub fn create_process(name: String) -> Option<PID_T>{
-        Some()
-
+impl MiniHook {
+    pub fn new(p_name: &str) -> Self {
+        let p = Process::new(p_name);
+        Self { process: p }
     }
-}*/
+}
+
+#[derive(Debug)]
+pub struct IAT {}

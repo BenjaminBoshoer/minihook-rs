@@ -11,7 +11,7 @@ Since this is a learning project, I won’t use LLMs to generate code. They’ll
 
 - **Implement a `Process` struct**
     - ✅ Create a process by calling `CreateProcessA`
-    - ✅ Get process handle
+    - ✅ Get handle to a running process with `OpenProcess`
 - **Implement basic DLL injection**
     - use `VirtualAllocEx` to allocate memory in target process
     - write shellcode/path to our hooked DLL using WriteProcessMemory
