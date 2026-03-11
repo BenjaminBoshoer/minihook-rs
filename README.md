@@ -7,6 +7,17 @@ As a Rust beginner, I know this project won’t be fully optimized. Still, I’l
 
 Since this is a learning project, I won’t use LLMs to generate code. They’ll mainly assist me in answering questions and refining design ideas.
 
+## Project Design
+
+I want the hooking process to be as simple as possible.
+
+```rust
+let mut h = MiniHook::new();
+
+//hook( PID,    DLL_NAME   , TARGET_FUNCTION ,    NEW_FUNCTION  )
+h.hook(1234, "Kernel32.dll", "CreateProcessA", "MyCreateProcess");
+```
+
 ## Project Roadmap
 
 - **Implement a `Process` struct**
