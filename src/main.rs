@@ -1,27 +1,14 @@
 use minihook_rs::{minihook::MiniHook, *};
+use std::io::stdin;
+
 
 fn main() {
-    println!("Let's do an API call!");
+    let p = ProcessN::new(1912);
+    println!("{:?}", p);
 
-    let mut p1 = Process::new("C:\\Windows\\System32\\notepad.exe");
-    match p1.run() {
-        Ok(()) => {
-            println!(
-                "Process created successfuly! PID: {}, Handle: {:?}",
-                p1.get_pid(),
-                p1.get_handle()
-            )
-        }
-        Err(x) => {
-            println!(
-                "Error! Creating process failed with the following error:{}",
-                x
-            )
-        }
-    }
+    let p = ProcessN::new(4708);
+    println!("{:?}", p);
 
-
-    let p2 = Process::new_from_pid(p1.get_pid()).unwrap();
-    println!("{:?}", p1);
-    println!("{:?}", p2);
+    let mut buf = String::new();
+    stdin().read_line(&mut buf).unwrap();
 }

@@ -4,8 +4,10 @@ pub fn add(left: u64, right: u64) -> u64 {
 
 pub mod minihook;
 pub mod process;
+pub mod process_new;
 
 pub use process::*;
+pub use process_new::*;
 
 #[cfg(test)]
 mod tests {
