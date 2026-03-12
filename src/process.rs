@@ -1,149 +1,55 @@
-//use crate::process;
-//use std::thread;
-//use std::{str::FromStr, time::Duration};
+use std::os::windows::io::HandleOrInvalid;
+use crate::hooks::*;
+
 use windows::{
-    Win32::{Foundation::HANDLE, System::Threading::*},
+    Win32::{Foundation::{GetLastError, HANDLE, UNICODE_STRING}, System::{ProcessStatus::*, Threading::*}},
     core::*,
 };
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum ProcessState {
-    Running,
-    Idle,
-    Terminated,
-    Pending,
-    Empty,
-}
-
 #[derive(Debug)]
 pub struct Process {
+    p_path: String,
     p_name: String,
-    handle: HANDLE,
     pid: u32,
-    state: ProcessState,
+    handle: HANDLE,
+    IAT_ptr: *const u8,
+    hooks: Hooks,
 }
 
 impl Process {
-    /// Fill the struct with default values except the process name.
-    pub fn new(name: &str) -> Self {
-        let p1 = Process::default();
+    pub fn new(pid_t: u32) -> Result<Self> {
+        let handle_t: HANDLE;
+        let mut buf = vec![0u8; 260];
 
-        Self {
-            p_name: name.to_owned(),
-            ..p1
-        }
-    }
-
-    pub fn new_from_pid(p_pid: u32) -> Option<Self>{
-
-        let mut p_handle: HANDLE;
-
-        unsafe {
-            let status = OpenProcess(
-                PROCESS_ALL_ACCESS, 
-                true, 
-                p_pid
-            );
-
-            match status {
-                Ok(x) => p_handle = x,
-                Err(y) => { return None},
+        unsafe{
+            /// Get Process handle from PID
+            match OpenProcess(PROCESS_ALL_ACCESS,true, pid_t) {
+                Ok(x) => handle_t = x,
+                Err(y) => return Err(y),
             }
-        }
 
-        let p1 = Process::default();
-        Some (Self { 
-            handle: p_handle,
-            pid: p_pid,
-            state: ProcessState::Running,
-            ..p1
-         })
-    }
-    /// Calling the run() will actually create the process and run it.
-    pub fn run(&mut self) -> Result<()> {
-        match self.state {
-            ProcessState::Empty => {}
-            _ => {
-                return Err(Error::new(HRESULT(-1), "test"));
+            /// Get Process name from HANDLE
+            match GetModuleFileNameExA(Some(handle_t), None, &mut buf) {
+                0 => return Err(Error::new(HRESULT(-1), "Failed to get Module name")),
+                _ => { },
             }
+
+            //let err = GetLastError();
+            //println!("{:?}", err);
         }
 
-        // Create parameters: structs and variables for calling CreateProccesA
-        let p_name_ptr: *const u8 = self.p_name.as_ptr();
-        let p_name_ptr = PCSTR(p_name_ptr);
+        let buf = match String::from_utf8(buf) {
+            Ok(x) => x,
+            Err(y) => return Err(Error::new(HRESULT(-1), y.to_string())),
+        };
 
-        let si = STARTUPINFOA::default();
-        let mut pi = PROCESS_INFORMATION::default();
+        let path = buf.clone().trim_matches('\0').to_string();
 
-        // Calling WinAPI function is unsafe operation
-        unsafe {
-            let status = CreateProcessA(
-                p_name_ptr,
-                None,
-                None,
-                None,
-                false,
-                PROCESS_CREATION_FLAGS(0),
-                None,
-                None,
-                &si,
-                &mut pi,
-            );
+        let buf = buf.trim_matches('\0').to_string().split("\\").last().unwrap().to_string();
 
-            self.handle = pi.hProcess;
-            self.pid = pi.dwProcessId;
+        //todo!("tes");
+        Ok( Self { p_path: path, p_name: buf, pid: pid_t, handle: handle_t, IAT_ptr: "s".to_string().as_ptr(), hooks: Hooks::new() } )
 
-            match status {
-                Ok(_) => self.state = ProcessState::Running,
-                Err(x) => return Err(x),
-            }
-        }
-
-        return Ok(());
     }
 
-    /// Terminate the process only if it's on 'Running' State
-    pub fn terminate(&mut self) -> Result<()> {
-
-        unsafe {
-            match self.state {
-                ProcessState::Running => {
-                    let status = TerminateProcess(self.get_handle(), 0);
-
-                    match status {
-                        Ok(_) => {
-                            self.state = ProcessState::Terminated;
-                            return Ok(());
-                        }
-                        Err(x) => return Err(x),
-                    }
-                }
-                _ => return Ok(()),
-            }
-        }
-    }
-
-    pub fn get_pid(&self) -> u32 {
-        self.pid
-    }
-
-    pub fn get_handle(&self) -> HANDLE {
-        self.handle
-    }
-
-    pub fn get_state(&self) -> ProcessState {
-        self.state.clone()
-    }
-}
-
-/// Default implementation for the Process struct
-impl Default for Process {
-    fn default() -> Self {
-        Self {
-            p_name: "no-name".to_owned(),
-            pid: 0,
-            state: ProcessState::Empty,
-            handle: HANDLE::default(),
-        }
-    }
 }

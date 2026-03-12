@@ -4,10 +4,10 @@ pub fn add(left: u64, right: u64) -> u64 {
 
 pub mod minihook;
 pub mod process;
-pub mod process_new;
+pub mod hooks;
 
 pub use process::*;
-pub use process_new::*;
+//pub use hooks::*;
 
 #[cfg(test)]
 mod tests {
@@ -18,17 +18,5 @@ mod tests {
         let result = add(2, 2);
         assert_eq!(result, 4);
     }
-
-    #[test]
-    fn create_process() {
-        let mut p = Process::new("C:\\Windows\\System32\\notepad.exe");
-
-        p.run();
-        let p_state = p.get_state();
-        assert_eq!(p_state, ProcessState::Running);
-
-        p.terminate();
-        let p_state = p.get_state();
-        assert_eq!(p_state, ProcessState::Terminated);
-    }
+    
 }

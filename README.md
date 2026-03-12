@@ -21,19 +21,24 @@ h.hook(1234, "Kernel32.dll", "CreateProcessA", "MyCreateProcess");
 ## Project Roadmap
 
 - **Implement a `Process` struct**
-    - ✅ Create a process by calling `CreateProcessA`
     - ✅ Get handle to a running process with `OpenProcess`
-- **Implement basic DLL injection**
-    - use `VirtualAllocEx` to allocate memory in target process
-    - write shellcode/path to our hooked DLL using WriteProcessMemory
-    - Create remote thread with `CreateRemoteThread` to call `LoadLibraryA`
-- **Hook Implementation**
+    - ✅ Get Process full path with `GetModuleFileNameExA`
+    - Get the IAT Address / Struct
+    - Perform the hook - Swap function addresses
+- **Implement a `MiniHook` struct**
+    - ✅ Define a Hashmap<u32, Process>
+    - Implement `hook()`
+        - Check if target process already exists in map
+        - If target process exists, check that the process didn't change
+        - Call `Process::hook()`
+- **Testing**
+    - Test Process creation
+    - Test creating Process -> killing it -> trying to hook.
+- **Expnasions**
     - Support multiple hooking methods for hooking `kernel32.dll` functions:
         - Inline hooks (manual JMP assembly)
         - IAT hooking (patch Import Address Table)
         - EAT hooking (Export Address Table for DLLs)
-    - Error handling & cleanup
-        - Unhook in DLL unload
-- **Expnasions**
     - Extend hooking to `ntdll.dll` functions
-    - Present the IAT table
+    
+
