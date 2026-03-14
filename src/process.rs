@@ -2,9 +2,11 @@ use std::os::windows::io::HandleOrInvalid;
 use crate::hooks::*;
 
 use windows::{
-    Win32::{Foundation::{GetLastError, HANDLE, UNICODE_STRING}, System::{ProcessStatus::*, Threading::*}},
+    Win32::{Foundation::{GetLastError, HANDLE, UNICODE_STRING}, System::{ProcessStatus::*, Threading::*, LibraryLoader}},
     core::*,
 };
+use windows::Win32::Foundation::FARPROC;
+use windows::Win32::System::LibraryLoader::{GetModuleHandleA, GetProcAddress};
 
 #[derive(Debug)]
 pub struct Process {
@@ -52,4 +54,27 @@ impl Process {
 
     }
 
+    pub fn hook(&mut self) -> Result<()> {
+        Self::get_dll_func_address("kernel32.dll", "CreateProcessW");
+
+        //let s = s!("hey");
+
+        //GetProcAddress()
+        Ok(())
+    }
+
+    fn get_dll_func_address(dll: &str, f: &str) -> Result<FARPROC>{
+        let dll = PCSTR(dll.to_string().as_ptr());
+        let f = PCSTR(f.to_string().as_ptr());
+
+        unsafe {
+            let dll_handle = match GetModuleHandleA(dll) {
+                Ok(x) => x,
+                Err(y) => return Err(y),
+            };
+
+            let location = GetProcAddress(dll_handle, f);
+            Ok(location)
+        }
+    }
 }

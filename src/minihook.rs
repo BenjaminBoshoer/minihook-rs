@@ -15,9 +15,9 @@ impl MiniHook {
 
     pub fn hook(&self, pid:u32, dll: &str, f_origin: &str, f_target: &str) -> std::io::Result<()> {
         if self.process.contains_key(&pid) {
-            //process.hook()
+            todo!();
         }
-
+        
         Ok(())
     }
 }

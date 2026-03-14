@@ -7,8 +7,9 @@ fn main() {
     let mut f = MiniHook::new();
     println!("{:?}", f);
 
-    let p = Process::new(6432);
+    let p = Process::new(10432);
     println!("{:?}", p);
+    p.unwrap().hook();
 
     let mut buf = String::new();
     stdin().read_line(&mut buf).unwrap();
