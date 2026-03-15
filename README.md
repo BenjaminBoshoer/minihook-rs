@@ -23,6 +23,7 @@ h.hook(1234, "Kernel32.dll", "CreateProcessA", "MyCreateProcess");
 - **Implement a `Process` struct**
     - ✅ Get handle to a running process with `OpenProcess`
     - ✅ Get Process full path with `GetModuleFileNameExA`
+    - ✅ Get all loaded modules for this process
     - Get the IAT Address / Struct
     - Perform the hook - Swap function addresses
 - **Implement a `MiniHook` struct**
