@@ -23,8 +23,8 @@ h.hook(1234, "Kernel32.dll", "CreateProcessA", "MyCreateProcess");
 - **Implement a `Process` struct**
     - ✅ Get handle to a running process with `OpenProcess`
     - ✅ Get Process full path with `GetModuleFileNameExA`
-    - ✅ Get all loaded modules for this process
-    - Get the IAT Address / Struct
+    - ✅ Get all loaded modules for this process with `EnumProcessModules`
+    - Get the IAT Address / Struct with `ImageDirectoryEntryToData`
     - Perform the hook - Swap function addresses
 - **Implement a `MiniHook` struct**
     - ✅ Define a Hashmap<u32, Process>
@@ -42,4 +42,6 @@ h.hook(1234, "Kernel32.dll", "CreateProcessA", "MyCreateProcess");
         - EAT hooking (Export Address Table for DLLs)
     - Extend hooking to `ntdll.dll` functions
     
+## Useful links
 
+Windows crate index for cargo.toml = https://microsoft.github.io/windows-rs/features/
