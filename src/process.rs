@@ -35,6 +35,8 @@ impl Process {
         // Get Process base address
         let base_address = Process::get_base_address(handle_t)?;
 
+        let iat = Process::get_IAT(base_address);
+
         Ok(Self {
             p_path: path,
             p_name: name,
@@ -123,11 +125,10 @@ impl Process{
         }
     }
 
-    /*fn get_IAT(base_addr: HMODULE) -> Result<u64> {
-
-        unsafe {
-            let rusult = ImageDirectoryEntryToData();
-        }
+    fn get_IAT(base_addr: HMODULE) -> Result<u64> {
+        let mut size: Vec<u32> = vec!(0u32, 4);
+        let mut section_header = IMAGE_SECTION_HEADER::default();
+        let imports_dir_base_addr = unsafe { ImageDirectoryEntryToDataEx(base_addr.0, false, IMAGE_DIRECTORY_ENTRY_EXPORT, size.as_mut_ptr(), None) };
         Ok(0 as u64)
-    }*/
+    }
 }
