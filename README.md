@@ -19,7 +19,10 @@ h.hook(1234, "Kernel32.dll", "CreateProcessA", "MyCreateProcess");
 ```
 
 ## Project Roadmap
-
+- **DLL Injection**
+    - Allocate memory in address space of target process
+    - Copy the name of DLL into the allocated memory space
+    - Call `CraeteRemoteThread` on the selected process
 - **Implement a `Process` struct**
     - ✅ Get handle to a running process with `OpenProcess`
     - ✅ Get Process full path with `GetModuleFileNameExA`
@@ -42,6 +45,6 @@ h.hook(1234, "Kernel32.dll", "CreateProcessA", "MyCreateProcess");
         - EAT hooking (Export Address Table for DLLs)
     - Extend hooking to `ntdll.dll` functions
     
-## Useful links
-
-Windows crate index for cargo.toml = https://microsoft.github.io/windows-rs/features/
+## Useful links & Resources
+Windows crate index for cargo.toml - https://microsoft.github.io/windows-rs/features/
+DLL injections - https://relearex.wordpress.com/2017/12/26/hooking-series-part-i-import-address-table-hooking/
