@@ -1,4 +1,4 @@
-use minihook_rs::{minihook::MiniHook, *};
+use minihook_core::{minihook::MiniHook, *};
 use std::io::stdin;
 
 
@@ -7,7 +7,7 @@ fn main() {
     let mut f = MiniHook::new();
     println!("{:?}", f);
 
-    let mut p = match Process::new(10916) {
+    let mut p = match Process::new(12156) {
         Ok(x) => x,
         Err(y) => panic!(),
     };

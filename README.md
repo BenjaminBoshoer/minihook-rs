@@ -7,10 +7,23 @@ As a Rust beginner, I know this project won’t be fully optimized. Still, I’l
 
 Since this is a learning project, I won’t use LLMs to generate code. They’ll mainly assist me in answering questions and refining design ideas.
 
-## Project Design
+## Project Structure
 
-I want the hooking process to be as simple as possible.
+The project is divided between three modules:
 
+**Core module** - 
+The core module is the orchestrator of the project. \
+It is responsible for:
+- Open handles to processes
+- Inject processes with our DLL
+- Manage hooks creation / removal
+
+**Injector module** - This module a simple DLL injector that is being used by the core module. 
+The reasons this a standalone module are **1)** to separate concerns **2)** faster compile/build time **3)** practice in creating a more complex "workflow" type project.
+
+**Payload module** - This module will compile into a DLL that will be injected into a target process.
+
+My end goal is to provide a simple user API for hooking functions.
 ```rust
 let mut h = MiniHook::new();
 
@@ -19,25 +32,23 @@ h.hook(1234, "Kernel32.dll", "CreateProcessA", "MyCreateProcess");
 ```
 
 ## Project Roadmap
-- **DLL Injection**
+
+- **Payload module**
+    - Create a simple function that can be exported
+    - Once the exported function is called, extract the IAT of the process
+    - Located the target function in memory
+    - Perform the hook - Swap function addresses
+- **Injector module**
     - Allocate memory in address space of target process
     - Copy the name of DLL into the allocated memory space
     - Call `CraeteRemoteThread` on the selected process
-- **Implement a `Process` struct**
+    - Inject the DLL into the target process
+- **Core module**
     - ✅ Get handle to a running process with `OpenProcess`
     - ✅ Get Process full path with `GetModuleFileNameExA`
     - ✅ Get all loaded modules for this process with `EnumProcessModules`
-    - Get the IAT Address / Struct with `ImageDirectoryEntryToData`
-    - Perform the hook - Swap function addresses
-- **Implement a `MiniHook` struct**
-    - ✅ Define a Hashmap<u32, Process>
-    - Implement `hook()`
-        - Check if target process already exists in map
-        - If target process exists, check that the process didn't change
-        - Call `Process::hook()`
-- **Testing**
-    - Test Process creation
-    - Test creating Process -> killing it -> trying to hook.
+    - Call the injector to inject the DLL
+    - Call the exported DLL function and perform the hook
 - **Expnasions**
     - Support multiple hooking methods for hooking `kernel32.dll` functions:
         - Inline hooks (manual JMP assembly)
@@ -46,5 +57,6 @@ h.hook(1234, "Kernel32.dll", "CreateProcessA", "MyCreateProcess");
     - Extend hooking to `ntdll.dll` functions
     
 ## Useful links & Resources
+Create a DLL in Rust - https://kennykerr.ca/rust-getting-started/creating-your-first-dll.html
 Windows crate index for cargo.toml - https://microsoft.github.io/windows-rs/features/
 DLL injections - https://relearex.wordpress.com/2017/12/26/hooking-series-part-i-import-address-table-hooking/
