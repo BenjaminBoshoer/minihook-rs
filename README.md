@@ -57,6 +57,6 @@ h.hook(1234, "Kernel32.dll", "CreateProcessA", "MyCreateProcess");
     - Extend hooking to `ntdll.dll` functions
     
 ## Useful links & Resources
-Create a DLL in Rust - https://kennykerr.ca/rust-getting-started/creating-your-first-dll.html
-Windows crate index for cargo.toml - https://microsoft.github.io/windows-rs/features/
-DLL injections - https://relearex.wordpress.com/2017/12/26/hooking-series-part-i-import-address-table-hooking/
+- Create a DLL in Rust - https://kennykerr.ca/rust-getting-started/creating-your-first-dll.html
+- Windows crate index for cargo.toml - https://microsoft.github.io/windows-rs/features/
+- DLL injections - https://relearex.wordpress.com/2017/12/26/hooking-series-part-i-import-address-table-hooking/
