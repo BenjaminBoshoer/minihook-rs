@@ -17,4 +17,6 @@ features = ["Data_Xml_Dom",
     "Win32_UI_WindowsAndMessaging",
     "Win32_System_ProcessStatus",
     "Win32_System_Diagnostics_Debug",
-    "Win32_System_LibraryLoader"]
+    "Win32_System_LibraryLoader",
+    "Win32_System_SystemServices",
+    "Win32_System_SystemInformation",]
