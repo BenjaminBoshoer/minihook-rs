@@ -34,7 +34,7 @@ h.hook(1234, "Kernel32.dll", "CreateProcessA", "MyCreateProcess");
 ## Project Roadmap
 
 - **Payload module**
-    - Create a simple function that can be exported
+    - ✅ Create a simple function that can be exported
     - Once the exported function is called, extract the IAT of the process
     - Located the target function in memory
     - Perform the hook - Swap function addresses

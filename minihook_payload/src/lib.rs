@@ -1,3 +1,4 @@
+use std::ops::Add;
 use windows::{
     Win32::{
         Foundation::{HMODULE, HANDLE, UNICODE_STRING},
@@ -7,7 +8,7 @@ use windows::{
 };
 use windows::Win32::Foundation::FARPROC;
 use windows::Win32::System::LibraryLoader::{GetModuleFileNameA, GetModuleHandleA, GetModuleHandleExA};
-use windows::Win32::System::SystemServices::IMAGE_DOS_HEADER;
+use windows::Win32::System::SystemServices::{IMAGE_DOS_HEADER, IMAGE_IMPORT_DESCRIPTOR};
 
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
@@ -30,10 +31,12 @@ extern "system" fn Hook(module: &str, target_function: &str, payload_function: &
     let image_dos_header = (module_handle.0 as *const IMAGE_DOS_HEADER);
     let lfanew = unsafe { (*image_dos_header).e_lfanew as usize };
 
-    // Add 32-bit handler
+    // 64-bit handler
     let image_nt_headers = unsafe { (image_dos_header.add(lfanew)) as *const IMAGE_NT_HEADERS64 };
+    // TODO: Add 32-bit handler
 
-
+    let image_optional_header = unsafe { &(*image_nt_headers).OptionalHeader};
+    //let import_dir = unsafe { (image_dos_header.add((*image_optional_header).DataDirectory[2].VirtualAddress)) as *const IMAGE_IMPORT_DESCRIPTOR};
 
 
     // image_nt_header = module_handle.0 + image_dos_header.e_lfanew as *const IMAGE_NT;
