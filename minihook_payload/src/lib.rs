@@ -17,6 +17,7 @@ pub fn add(left: u64, right: u64) -> u64 {
 struct HookStatus {
 
 }
+#[unsafe(no_mangle)]
 extern "system" fn Hook(module: &str, target_function: &str, payload_function: &str) -> i32 {
     let mut base = HMODULE::default();
     let result = match unsafe { GetModuleHandleExA(0, None, &mut base).unwrap() } {
@@ -26,7 +27,18 @@ extern "system" fn Hook(module: &str, target_function: &str, payload_function: &
 
     let base = base.0 as *const u8;
 
+    let image_dos_header = unsafe { base as *const IMAGE_DOS_HEADER} ;
+    let image_nt_header = unsafe { (base.add((*image_dos_header).e_lfanew as usize)) as *const IMAGE_NT_HEADERS64} ;
+    let image_optional_header = unsafe{ (*image_nt_header).OptionalHeader};
 
+    let import_rva = image_optional_header.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT.0 as usize].VirtualAddress;
+    let dll_number = image_optional_header.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT.0 as usize].Size;
+    let dll_number = dll_number as usize / size_of::<IMAGE_IMPORT_DESCRIPTOR>();
+    let import_dir = unsafe { (base as usize + import_rva as usize) as *const IMAGE_IMPORT_DESCRIPTOR};
+
+
+
+    println!("Success");
     return 0;
 }
 
