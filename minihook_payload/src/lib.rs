@@ -1,3 +1,6 @@
+mod helper;
+
+use std::ffi::CStr;
 use std::ops::Add;
 use windows::{
     Win32::{
@@ -9,6 +12,7 @@ use windows::{
 use windows::Win32::Foundation::FARPROC;
 use windows::Win32::System::LibraryLoader::{GetModuleFileNameA, GetModuleHandleA, GetModuleHandleExA};
 use windows::Win32::System::SystemServices::{IMAGE_DOS_HEADER, IMAGE_IMPORT_DESCRIPTOR};
+use crate::helper::{get_image_base, get_import_dir, ptr_to_str};
 
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
@@ -19,28 +23,20 @@ struct HookStatus {
 }
 #[unsafe(no_mangle)]
 extern "system" fn Hook(module: &str, target_function: &str, payload_function: &str) -> i32 {
-    let mut base = HMODULE::default();
-    let result = match unsafe { GetModuleHandleExA(0, None, &mut base).unwrap() } {
-        () => { },
-        _ => { return -1 ;}
-    };
+    let base = get_image_base().unwrap();
 
-    let base = base.0 as *const u8;
+    let import_dir = get_import_dir(base);
+    let import_dir2 = unsafe {import_dir.add(1)};
 
-    let image_dos_header = unsafe { base as *const IMAGE_DOS_HEADER} ;
-    let image_nt_header = unsafe { (base.add((*image_dos_header).e_lfanew as usize)) as *const IMAGE_NT_HEADERS64} ;
-    let image_optional_header = unsafe{ (*image_nt_header).OptionalHeader};
+    let name_1 = unsafe { (base as usize + (*import_dir).Name as usize) as *const i8 };
+    let name_2 = unsafe { (base as usize + (*import_dir2).Name as usize) as *const i8};
 
-    let import_rva = image_optional_header.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT.0 as usize].VirtualAddress;
-    let dll_number = image_optional_header.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT.0 as usize].Size;
-    let dll_number = dll_number as usize / size_of::<IMAGE_IMPORT_DESCRIPTOR>();
-    let import_dir = unsafe { (base as usize + import_rva as usize) as *const IMAGE_IMPORT_DESCRIPTOR};
-
-
-
+    let name_1 = ptr_to_str(name_1).unwrap();
+    let name_2 = ptr_to_str(name_2).unwrap();
     println!("Success");
     return 0;
 }
+
 
 #[unsafe(no_mangle)]
 extern "system" fn Mess(module: &str, target_function: &str, payload_function: &str) -> i32 {
