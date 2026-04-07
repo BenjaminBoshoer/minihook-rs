@@ -3,6 +3,7 @@ use windows::Win32::Foundation::HMODULE;
 use windows::Win32::System::Diagnostics::Debug::{IMAGE_DIRECTORY_ENTRY_IMPORT, IMAGE_NT_HEADERS64};
 use windows::Win32::System::LibraryLoader::GetModuleHandleExA;
 use windows::Win32::System::SystemServices::{IMAGE_DOS_HEADER, IMAGE_IMPORT_DESCRIPTOR};
+use windows::Win32::System::WindowsProgramming::IMAGE_THUNK_DATA64;
 
 pub fn ptr_to_str(ptr: *const i8) -> Option<String> {
     let str = unsafe { CStr::from_ptr(ptr).to_string_lossy().into_owned() };
@@ -29,4 +30,10 @@ pub fn get_image_base() -> Option<*const u8> {
 
     let base = base.0 as *const u8;
     Some(base)
+}
+
+pub fn get_address_thunk_by_function_name(base_ptr: *const i8, dll_name: String, funtion_name: String) -> *mut IMAGE_THUNK_DATA64 {
+    let mut address_thunk = IMAGE_THUNK_DATA64::default();
+
+    return &mut address_thunk;
 }
