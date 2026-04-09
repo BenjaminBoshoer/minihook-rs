@@ -10,6 +10,32 @@ pub fn ptr_to_str(ptr: *const i8) -> Option<String> {
     Some(str)
 }
 
+pub fn get_dll_image_base(base: *const u8, import_dir: *const IMAGE_IMPORT_DESCRIPTOR, target_name: String) -> Option<*const IMAGE_IMPORT_DESCRIPTOR> {
+
+    let mut dll_ptr = import_dir;
+    //let dll_name = ptr_to_str(dll_name).unwrap();
+
+    unsafe {
+        loop {
+            if (*dll_ptr).FirstThunk == 0 && (*dll_ptr).Anonymous.OriginalFirstThunk == 0  {
+                return None;
+            }
+
+            let dll_name_ptr = base as usize + (*dll_ptr).Name as usize;
+            let dll_name = ptr_to_str(dll_name_ptr as *const i8).unwrap();
+
+            if dll_name == target_name {
+                return Some(dll_ptr);
+            }
+            dll_ptr = dll_ptr.add(1);
+        }
+    }
+
+    //Some(unsafe{ (base as usize + (*import_dir).Anonymous.OriginalFirstThunk as usize) as *const IMAGE_THUNK_DATA64 })
+
+    //while let name
+}
+
 pub fn get_import_dir(base: *const u8) -> *mut IMAGE_IMPORT_DESCRIPTOR{
     let image_dos_header = unsafe { base as *const IMAGE_DOS_HEADER} ;
     let image_nt_header = unsafe { (base.add((*image_dos_header).e_lfanew as usize)) as *const IMAGE_NT_HEADERS64} ;
