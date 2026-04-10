@@ -12,7 +12,7 @@ use windows::{
 use windows::Win32::Foundation::FARPROC;
 use windows::Win32::System::LibraryLoader::{GetModuleFileNameA, GetModuleHandleA, GetModuleHandleExA};
 use windows::Win32::System::SystemServices::{IMAGE_DOS_HEADER, IMAGE_IMPORT_BY_NAME, IMAGE_IMPORT_DESCRIPTOR};
-use crate::helper::{get_dll_image_base, get_image_base, get_import_dir, ptr_to_str};
+use crate::helper::*;
 
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
@@ -26,8 +26,8 @@ extern "system" fn Hook(module: &str, target_function: &str, payload_function: &
     let base = get_image_base().unwrap();
 
     let import_dir = get_import_dir(base);
-    get_dll_image_base(base, import_dir, "Test.dll".to_string());
-    
+    get_target_thunk(base, import_dir, "kernel32.dll".to_string());
+
     let import_dir2 = unsafe {import_dir.add(1)};
 
     let name_1 = unsafe { (base as usize + (*import_dir).Name as usize) as *const i8 };

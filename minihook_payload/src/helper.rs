@@ -2,7 +2,7 @@ use std::ffi::CStr;
 use windows::Win32::Foundation::HMODULE;
 use windows::Win32::System::Diagnostics::Debug::{IMAGE_DIRECTORY_ENTRY_IMPORT, IMAGE_NT_HEADERS64};
 use windows::Win32::System::LibraryLoader::GetModuleHandleExA;
-use windows::Win32::System::SystemServices::{IMAGE_DOS_HEADER, IMAGE_IMPORT_DESCRIPTOR};
+use windows::Win32::System::SystemServices::{IMAGE_DOS_HEADER, IMAGE_IMPORT_BY_NAME, IMAGE_IMPORT_DESCRIPTOR};
 use windows::Win32::System::WindowsProgramming::IMAGE_THUNK_DATA64;
 
 pub fn ptr_to_str(ptr: *const i8) -> Option<String> {
@@ -10,8 +10,7 @@ pub fn ptr_to_str(ptr: *const i8) -> Option<String> {
     Some(str)
 }
 
-pub fn get_dll_image_base(base: *const u8, import_dir: *const IMAGE_IMPORT_DESCRIPTOR, target_name: String) -> Option<*const IMAGE_IMPORT_DESCRIPTOR> {
-
+pub fn get_target_thunk(base: *const u8, import_dir: *const IMAGE_IMPORT_DESCRIPTOR, target_name: String) -> Option<*const IMAGE_THUNK_DATA64> {
     let mut dll_ptr = import_dir;
     //let dll_name = ptr_to_str(dll_name).unwrap();
 
@@ -25,7 +24,13 @@ pub fn get_dll_image_base(base: *const u8, import_dir: *const IMAGE_IMPORT_DESCR
             let dll_name = ptr_to_str(dll_name_ptr as *const i8).unwrap();
 
             if dll_name == target_name {
-                return Some(dll_ptr);
+                let mut ilt_thunk_ptr = (base as usize + (*dll_ptr).Anonymous.OriginalFirstThunk as usize) as *mut IMAGE_THUNK_DATA64;
+                loop {
+                    let mut ilt_thunk_name_ptr = (base as usize + (*ilt_thunk_ptr).u1.AddressOfData as usize) as *const IMAGE_IMPORT_BY_NAME;
+                    let ilt_thunk_name = ptr_to_str((*ilt_thunk_name_ptr).Name.as_ptr());
+                    ilt_thunk_ptr = ilt_thunk_ptr.add(1);
+                    println!("");
+                }
             }
             dll_ptr = dll_ptr.add(1);
         }
@@ -34,6 +39,7 @@ pub fn get_dll_image_base(base: *const u8, import_dir: *const IMAGE_IMPORT_DESCR
     //Some(unsafe{ (base as usize + (*import_dir).Anonymous.OriginalFirstThunk as usize) as *const IMAGE_THUNK_DATA64 })
 
     //while let name
+    None
 }
 
 pub fn get_import_dir(base: *const u8) -> *mut IMAGE_IMPORT_DESCRIPTOR{
