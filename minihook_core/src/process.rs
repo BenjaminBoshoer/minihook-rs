@@ -3,11 +3,14 @@ use std::collections::HashMap;
 use windows::{
     Win32::{
         Foundation::{HMODULE, HANDLE, UNICODE_STRING},
-        System::{ProcessStatus::*, Threading::*, LibraryLoader, Diagnostics::Debug::*},
+        System::{ProcessStatus::*, Threading::*, LibraryLoader, Diagnostics::Debug::*, SystemServices::*},
     },
     core::*,
 };
 use windows::Win32::Foundation::FARPROC;
+use windows::Win32::System::LibraryLoader::LoadLibraryA;
+
+
 
 #[derive(Debug)]
 pub struct Process {
@@ -23,6 +26,7 @@ pub struct Process {
 /// Public High-Level API
 impl Process {
     pub fn new(pid_t: u32) -> Result<Self> {
+
         //Get Process handle
         let handle_t = unsafe { OpenProcess(PROCESS_ALL_ACCESS, true, pid_t)? };
 
@@ -34,6 +38,10 @@ impl Process {
 
         // Get Process base address
         let base_address = Process::get_base_address(handle_t)?;
+
+        let mut dos_header = IMAGE_DOS_HEADER::default();
+        let test = base_address.0 as *mut IMAGE_DOS_HEADER;
+
 
         let iat = Process::get_IAT(base_address);
 
@@ -83,6 +91,10 @@ impl Process {
             }
         }
         Ok(map)
+    }
+
+    pub fn load_lib() -> () {
+        let result = unsafe{ LoadLibraryA(s!("C:\\Users\\rwxbeny\\Documents\\Rust\\minihook-rs\\target\\debug\\minihook_payload.dll")) };
     }
 }
 

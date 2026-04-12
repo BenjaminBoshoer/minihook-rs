@@ -37,7 +37,8 @@ h.hook(1234, "Kernel32.dll", "CreateProcessA", "MyCreateProcess");
     - ✅ Create a simple function that can be exported
     - ✅ Get PE base address by calling GetModuleHandleExA
     - ✅ Iterate over imported modules
-    - Find the target function in the correct imported module
+    - ✅ Find the target function in the correct imported module
+    - ⚙️ Overwrite target function address with new function address
 - **Injector module**
     - Allocate memory in address space of target process
     - Copy the name of DLL into the allocated memory space
