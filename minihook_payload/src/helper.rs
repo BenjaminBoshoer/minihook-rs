@@ -10,30 +10,67 @@ pub fn ptr_to_str(ptr: *const i8) -> Option<String> {
     Some(str)
 }
 
-pub fn get_target_thunk(base: *const u8, import_dir: *const IMAGE_IMPORT_DESCRIPTOR, target_name: String) -> Option<*const IMAGE_THUNK_DATA64> {
+pub fn get_target_thunk(base: *const u8, import_dir: *const IMAGE_IMPORT_DESCRIPTOR, target_import_name: String, target_function_name: String) -> Option<*const IMAGE_THUNK_DATA64> {
     let mut dll_ptr = import_dir;
-    //let dll_name = ptr_to_str(dll_name).unwrap();
+    let mut function_index: i32 = 0;
+
 
     unsafe {
         loop {
+            // Loop until the last cell of the array arrived. The last Cell is an empty one
             if (*dll_ptr).FirstThunk == 0 && (*dll_ptr).Anonymous.OriginalFirstThunk == 0  {
                 return None;
             }
 
+            //Extract DLL name
             let dll_name_ptr = base as usize + (*dll_ptr).Name as usize;
             let dll_name = ptr_to_str(dll_name_ptr as *const i8).unwrap();
 
-            if dll_name == target_name {
-                let mut ilt_thunk_ptr = (base as usize + (*dll_ptr).Anonymous.OriginalFirstThunk as usize) as *mut IMAGE_THUNK_DATA64;
-                loop {
-                    let mut ilt_thunk_name_ptr = (base as usize + (*ilt_thunk_ptr).u1.AddressOfData as usize) as *const IMAGE_IMPORT_BY_NAME;
-                    let ilt_thunk_name = ptr_to_str((*ilt_thunk_name_ptr).Name.as_ptr());
-                    ilt_thunk_ptr = ilt_thunk_ptr.add(1);
-                    println!("");
-                }
+            // Continue until we find the correct DLL
+            if dll_name.to_lowercase() != target_import_name.to_lowercase() {
+                continue;
             }
-            dll_ptr = dll_ptr.add(1);
+
+            // get the Import Name Table of this DLL
+            let mut ilt_thunk_ptr = (base as usize + (*dll_ptr).Anonymous.OriginalFirstThunk as usize) as *mut IMAGE_THUNK_DATA64;
+
+            loop {
+                // If we got to the last cell in that array
+                if (*ilt_thunk_ptr).u1.AddressOfData == 0 {
+                    // reset function index and break
+                    function_index = -1;
+                    break;
+                }
+
+                // Get a pointer to the name of the function
+                let mut ilt_thunk_name_ptr = (base as usize + (*ilt_thunk_ptr).u1.AddressOfData as usize) as *const IMAGE_IMPORT_BY_NAME;
+                let ilt_thunk_name = ptr_to_str((*ilt_thunk_name_ptr).Name.as_ptr()).unwrap();
+
+                // If this isn't the target function, continue
+                if ilt_thunk_name.to_lowercase() != target_function_name.to_lowercase() {
+                    ilt_thunk_ptr = ilt_thunk_ptr.add(1);
+                    function_index += 1;
+                    println!("Passing over: {}", ilt_thunk_name);
+                    continue;
+                }
+
+                println!("Found! {ilt_thunk_name}");
+                break;
+            }
+
+            if function_index == -1 {
+                function_index = 0;
+            } else { break; }
         }
+
+        // Now having the index from the Import Name Table, we can iterate over the Import Address Table
+        loop {
+            let mut iat_ptr = (base as usize + (*dll_ptr).FirstThunk as usize) as *mut i64;
+            iat_ptr = iat_ptr.add(function_index as usize);
+            println!("The target function is at: {:x?}", (*iat_ptr));
+            break;
+        }
+
     }
 
     //Some(unsafe{ (base as usize + (*import_dir).Anonymous.OriginalFirstThunk as usize) as *const IMAGE_THUNK_DATA64 })
