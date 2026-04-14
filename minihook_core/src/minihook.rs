@@ -1,6 +1,6 @@
 use crate::process::*;
-use std::collections::HashMap;
 use crate::process::*;
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct MiniHook {
@@ -13,11 +13,11 @@ impl MiniHook {
         Self { process: map }
     }
 
-    pub fn hook(&self, pid:u32, dll: &str, f_origin: &str, f_target: &str) -> std::io::Result<()> {
+    pub fn hook(&self, pid: u32, dll: &str, f_origin: &str, f_target: &str) -> std::io::Result<()> {
         if self.process.contains_key(&pid) {
             todo!();
         }
-        
+
         Ok(())
     }
 }

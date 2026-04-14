@@ -3,11 +3,12 @@ use std::io::stdin;
 
 use libloading::{Library, Symbol};
 
-
 fn main() {
-
     unsafe {
-        let lib = Library::new("C:\\Users\\rwxbeny\\Documents\\Rust\\minihook-rs\\target\\debug\\minihook_payload.dll").unwrap();
+        let lib = Library::new(
+            "C:\\Users\\rwxbeny\\Documents\\Rust\\minihook-rs\\target\\debug\\minihook_payload.dll",
+        )
+        .unwrap();
 
         let external_hook: Symbol<unsafe extern "system" fn(&str, &str, &str) -> i32> =
             lib.get(b"Hook").unwrap();
